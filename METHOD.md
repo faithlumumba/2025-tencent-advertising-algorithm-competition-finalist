@@ -14,7 +14,7 @@ $$
 ,\quad s_\bullet=\langle Q,K_\bullet\rangle
 $$
 
-All logits subtract **log q(·)** for **importance sampling correction**, making the result **unbiased** to full-softmax.
+All logits subtract **log q(·)** for **importance sampling correction**, yielding an **unbiased estimator of the full-softmax gradient**.
 
 ---
 
@@ -108,6 +108,7 @@ Aggregated user vector → `(γ, β)` → FiLM modulation: $x_t' = x_t \cdot (1+
 * Exclude items already seen in user history during sampling
 
 ---
+
 
 
 
