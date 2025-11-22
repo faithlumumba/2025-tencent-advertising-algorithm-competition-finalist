@@ -122,6 +122,8 @@ For evaluation, the following additional files are used:
   { "user_123": 3, "user_456": 1, ... }
   ```
 
+For more details, see [data_format.md](data_format.md).
+
 ---
 
 **Optional Dense Multimodal Embeddings (memmap):**
@@ -230,3 +232,4 @@ Developed upon the baseline of the 2025 Tencent Advertising Algorithm Competitio
 
 
 References the official HSTU implementation (“Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations”).
+
