@@ -37,34 +37,42 @@ Exclude items already shown in the current sequence when sampling.
 
 ## Mixed Negative Sampling
 
-### A. In-Batch
+### A. In-batch Sampling
 
-* Negatives = other positives in the same batch
-* Sampling bias ≈ item popularity → correct by subtracting **log q**
-* Exclude:
+* **Source:** Treat the **positive samples** from other examples within the same batch as negatives for the current sample. Compared with the softmax in standard classification, popular items will be sampled repeatedly, resulting in a **non-uniform sampling distribution**. The probability of an item being sampled is proportional to its occurrence frequency in the entire log. Therefore, to recover the behavior of standard softmax, we need to subtract **log q** from the logits for debiasing according to the principle of importance sampling.
 
-  * Same-sequence items
-  * Items with similarity > 0.99
-* Positive samples also subtract **log q** to emphasize **rare / cold items**
+* **Importance Correction:** Subtract the corresponding **log q** from the logits of these negative samples.
 
-### B. Global Random
+* **False-Negative Filtering:**
 
-* Randomly sample from the active item pool (excluding current sequence)
+  * Do not treat items from the **same sequence** as negatives.
+  * If an item’s similarity to the current positive exceeds 0.99, treat it as a potential interest item and filter it out.
+  * Because of this filtering, the computation of **q** is weakened to the item frequency raised to the power of **0.75**.
+  * Mathematically equivalent to popularity-based sampling, but more efficient in implementation.
+
+* **Apply the same − log q to positive samples as well:**
+
+  * After correcting the positive samples, the loss becomes exactly equivalent to full softmax.
+  * The purpose of log q correction is to suppress popular items. Applying the correction to positive samples is crucial because it increases the weight of **cold (new) items**. In the current dataset, more than half of all items appear fewer than five times. Thus, we need to pay special attention to predicting cold/new items, which is why the correction is also applied to positive samples.
 
 ---
 
-## In-Batch Hard Negative Mining (Top-k)
+### B. Global Random Sampling
 
-Late training = most negatives easy → dilute gradient.
-Keep only **top-k hardest** negatives per batch.
+* **Source:** Randomly sample negatives from the active-item pool, excluding items that appear in the current sequence.
 
-To prevent top-k from being dominated by in-batch negatives in the later stages of training, apply top-k separately to in-batch and global negatives.
+---
+
+## Hard Negative Mining
+
+In the mid and late training stages, most negatives are already easy (low-score), and retaining all of them **dilutes gradient**.
+Thus, we keep only the **top-k highest-scoring negatives**.
 
 ---
 
 ## Curriculum Learning
 
-Gradually reduce `hard_topk` as training progresses:
+As training progresses, gradually **reduce** `hard_topk` and decrease the proportion of global negatives, making the sampled negatives progressively **harder**.
 
 ---
 
@@ -108,6 +116,7 @@ Aggregated user vector → `(γ, β)` → FiLM modulation: $x_t' = x_t \cdot (1+
 * Exclude items already seen in user history during sampling
 
 ---
+
 
 
 
