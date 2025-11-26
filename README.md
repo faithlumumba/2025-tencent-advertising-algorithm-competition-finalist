@@ -112,16 +112,57 @@ In addition to `seq.jsonl`, the following files are involved:
   }
   ```
 
-For evaluation, the following additional files are used:
+### **Evaluation data**
 
-* `eval/predict_seq.jsonl` — user histories (same format as `seq.jsonl`)
-* `eval/predict_seq_offsets.pkl` — byte offsets for the file above
-* `eval/user_action_type.json` — target action type for each user:
+The following files are required under `EVAL_DATA_PATH`:
 
+* `eval/indexer.pkl`  
+  Same `indexer.pkl` used during training. 
+
+* `eval/item_feat_dict.json`  
+  Same item feature dictionary used during training.
+
+* `eval/predict_seq.jsonl` — user histories (same format as `seq.jsonl`)  
+
+* `eval/predict_seq_offsets.pkl` — byte offsets for `predict_seq.jsonl`  
+  A list of file offsets (one per user).
+
+* `eval/user_action_type.json` — target action type for each user  
+  A JSON object mapping user ids (strings) to an integer action type:
   ```json
-  { "user_123": 3, "user_456": 1, ... }
+  {
+    "user_123": 3,
+    "user_456": 1,
+    ...
+  }
+
+
+* `eval/predict_set.jsonl` — candidate items for retrieval (Top-K search)
+
+  This file is in **JSON Lines** format: each line is a JSON object describing a single candidate creative:
+
+  ```jsonc
+  {
+    "creative_id": "<cid matching indexer['i']>",
+    "features": {
+      "<fid>": <scalar or list>,
+      ...
+    }
+  }
   ```
 
+  where:
+
+  * `creative_id` is a string identifier that should be present in `indexer["i"]`. If it is not found, the item is treated as id `0` for cold-start handling.
+  * `features` has the same schema as the per-item feature dicts in `item_feat_dict.json`. During inference, any string values (either scalar or inside a list) are mapped to 0 for cold-start handling.
+
+  Example `predict_set.jsonl`:
+
+  ```jsonl
+  {"creative_id": "cid_00123456789", "features": {"100": 12, "117": 5, "118": 1024}}
+  {"creative_id": "cid_00987654321", "features": {"100": 3, "117": 8, "118": 2048}}
+  ```
+  
 For more details, see [data_format.md](data_format.md).
 
 ---
@@ -232,4 +273,5 @@ Developed upon the baseline of the 2025 Tencent Advertising Algorithm Competitio
 
 
 References the official HSTU implementation (“Actions Speak Louder than Words: Trillion-Parameter Sequential Transducers for Generative Recommendations”).
+
 
